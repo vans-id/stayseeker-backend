@@ -206,6 +206,15 @@ module.exports = {
   viewItem: async (req, res, next) => {
     try {
       const categories = await Category.find();
+      const items = await Item.find()
+        .populate({
+          path: 'imageId',
+          select: 'id imageUrl',
+        })
+        .populate({
+          path: 'categoryId',
+          select: 'id name',
+        });
 
       const alertMessage = req.flash('alertMessage');
       const alertStatus = req.flash('alertStatus');
@@ -218,6 +227,8 @@ module.exports = {
         title: 'Stayseeker | Our Items',
         alert,
         categories,
+        items,
+        action: 'view',
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -279,6 +290,180 @@ module.exports = {
       req.flash('alertMessage', `${error.message}`);
       req.flash('alertStatus', 'danger');
       res.redirect('/admin/item');
+    }
+  },
+  showImageItem: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const selectedItem = await Item.findById(
+        id
+      ).populate({
+        path: 'imageId',
+        select: 'id imageUrl',
+      });
+
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
+      res.render('admin/item/view_item', {
+        title: 'Stayseeker | Show Image',
+        alert,
+        selectedItem,
+        action: 'show image',
+      });
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect('/admin/item');
+    }
+  },
+  showEditItem: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const selectedItem = await Item.findById(id)
+        .populate({
+          path: 'imageId',
+          select: 'id imageUrl',
+        })
+        .populate({
+          path: 'categoryId',
+          select: 'id name',
+        });
+
+      const selectedCategory = await Category.find();
+
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
+      res.render('admin/item/view_item', {
+        title: 'Stayseeker | Edit Item',
+        alert,
+        selectedItem,
+        selectedCategory,
+        action: 'edit',
+      });
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect('/admin/item');
+    }
+  },
+  editItem: async (req, res, next) => {
+    const { id } = req.params;
+    const {
+      title,
+      price,
+      city,
+      country,
+      categoryId,
+      description,
+    } = req.body;
+
+    try {
+      const updatedItem = await Item.findById(id)
+        .populate({
+          path: 'imageId',
+          select: 'id imageUrl',
+        })
+        .populate({
+          path: 'categoryId',
+          select: 'id name',
+        });
+
+      if (req.files.length > 0) {
+        for (
+          let i = 0;
+          i < updatedItem.imageId.length;
+          i++
+        ) {
+          const updatedImage = await Image.findById(
+            updatedItem.imageId[i]._id
+          );
+
+          await fs.unlink(
+            path.join(
+              `public/${updatedImage.imageUrl}`
+            )
+          );
+          updatedImage.imageUrl = `images/${req.files[i].filename}`;
+          await updatedImage.save();
+        }
+      }
+
+      updatedItem.title = title;
+      updatedItem.price = price;
+      updatedItem.city = city;
+      updatedItem.country = country;
+      updatedItem.categoryId = categoryId;
+      updatedItem.description = description;
+
+      await updatedItem.save();
+
+      req.flash(
+        'alertMessage',
+        'Selected Item has been updated'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect('/admin/item');
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(`/admin/item/${id}`);
+    }
+  },
+  deleteItem: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const deletedItem = await Item.findById(
+        id
+      ).populate('imageId');
+
+      for (
+        let i = 0;
+        i < deletedItem.imageId.length;
+        i++
+      ) {
+        try {
+          const deletedImage = await Image.findById(
+            deletedItem.imageId[i]._id
+          );
+
+          await fs.unlink(
+            path.join(
+              `public/${deletedImage.imageUrl}`
+            )
+          );
+          deletedImage.remove();
+        } catch (error) {
+          req.flash(
+            'alertMessage',
+            `${error.message}`
+          );
+          req.flash('alertStatus', 'danger');
+          res.redirect(`/admin/item`);
+        }
+      }
+
+      await deletedItem.remove();
+
+      req.flash(
+        'alertMessage',
+        'Selected Item has been deleted'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect('/admin/item');
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(`/admin/item`);
     }
   },
   // Booking

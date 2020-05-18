@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <% include ../../partials/header.ejs %>
+
+  <body id="page-top">
+    <div id="wrapper">
+      <% include ../../partials/sidebar.ejs %>
+
+      <div
+        id="content-wrapper"
+        class="d-flex flex-column"
+      >
+        <div id="content">
+          <% include ../../partials/navbar.ejs %>
+
+          <div class="container-fluid">
+            <% include ../../partials/message.ejs %>
+
+            <h1 class="h3 mb-4 text-primary">
+              Bank Accounts
+            </h1>
+
+            <% include ./tableBank.ejs %>
+          </div>
+          <% include ./addModal.ejs %> <% include
+          ./editModal.ejs %>
+        </div>
+        <% include ../../partials/footer.ejs %>
+      </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+      <i class="fas fa-angle-up"></i>
+    </a>
+
+    <% include ../../partials/logoutModal.ejs %>
+  </body>
+  <% include ../../partials/scripts.ejs %>
+
+  <script>
+    $('#dataTable').on(
+      'click',
+      '.button-update',
+      function () {
+        let id = $(this).data('id');
+        let name = $(this).data('name');
+        let bankName = $(this).data('bankname');
+        let accNumber = $(this).data('accnumber');
+
+        $('#editCategoryModal').modal('show');
+        $('.id').val(id);
+        $('.name').val(name);
+        $('.bankName').val(bankName);
+        $('.accNumber').val(accNumber);
+      }
+    );
+  </script>
+</html>

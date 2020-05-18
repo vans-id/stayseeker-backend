@@ -1,7 +1,10 @@
 const fs = require('fs-extra');
 const path = require('path');
+
 const Category = require('../models/Category');
 const Bank = require('../models/Bank');
+const Item = require('../models/Item');
+const Image = require('../models/Image');
 
 module.exports = {
   viewDashboard: (req, res, next) => {
@@ -200,10 +203,83 @@ module.exports = {
     }
   },
   // Items
-  viewItem: (req, res, next) => {
-    res.render('admin/item/view_item', {
-      title: 'Stayseeker | Our Items',
-    });
+  viewItem: async (req, res, next) => {
+    try {
+      const categories = await Category.find();
+
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
+      res.render('admin/item/view_item', {
+        title: 'Stayseeker | Our Items',
+        alert,
+        categories,
+      });
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect('/admin/item');
+    }
+  },
+  addItem: async (req, res, next) => {
+    try {
+      const {
+        title,
+        price,
+        city,
+        country,
+        categoryId,
+        description,
+      } = req.body;
+
+      if (req.files.length > 0) {
+        const selectedCategory = await Category.findById(
+          categoryId
+        );
+
+        const newItem = {
+          categoryId: selectedCategory._id,
+          title,
+          price,
+          city,
+          country,
+          description,
+        };
+
+        const createdItem = await Item.create(newItem);
+
+        selectedCategory.itemId.push({
+          _id: createdItem._id,
+        });
+        await selectedCategory.save();
+
+        for (let i = 0; i < req.files.length; i++) {
+          const createdImage = await Image.create({
+            imageUrl: `images/${req.files[i].filename}`,
+          });
+
+          createdItem.imageId.push({
+            _id: createdImage._id,
+          });
+          await createdItem.save();
+        }
+      }
+
+      req.flash(
+        'alertMessage',
+        'New Item has been added'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect('/admin/item');
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect('/admin/item');
+    }
   },
   // Booking
   viewBooking: (req, res, next) => {

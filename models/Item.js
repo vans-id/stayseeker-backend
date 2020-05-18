@@ -21,12 +21,17 @@ const itemSchema = new mongoose.Schema({
   },
   isPopular: {
     type: Boolean,
+    default: false,
   },
   description: {
     type: String,
     required: true,
   },
-  image: [
+  categoryId: {
+    type: ObjectId,
+    ref: 'Category',
+  },
+  imageId: [
     {
       type: ObjectId,
       ref: 'Image',

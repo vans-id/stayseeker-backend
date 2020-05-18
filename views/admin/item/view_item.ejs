@@ -14,11 +14,62 @@
           <% include ../../partials/navbar.ejs %>
 
           <div class="container-fluid">
+            <% include ../../partials/message.ejs %>
+
             <h1 class="h3 mb-4 text-primary">
               Our Items
             </h1>
 
-            <% include ./tableItem.ejs %>
+            <ul
+              class="nav nav-tabs"
+              id="myTab"
+              role="tablist"
+            >
+              <li class="nav-item" role="presentation">
+                <a
+                  class="nav-link active"
+                  id="home-tab"
+                  data-toggle="tab"
+                  href="#show-item"
+                  role="tab"
+                  aria-controls="home"
+                  aria-selected="true"
+                >
+                  List Items
+                </a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a
+                  class="nav-link"
+                  id="profile-tab"
+                  data-toggle="tab"
+                  href="#add-item"
+                  role="tab"
+                  aria-controls="profile"
+                  aria-selected="false"
+                >
+                  Add Items
+                </a>
+              </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+              <div
+                class="tab-pane fade show active"
+                id="show-item"
+                role="tabpanel"
+                aria-labelledby="home-tab"
+              >
+                <% include ./tableItem.ejs %>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="add-item"
+                role="tabpanel"
+                aria-labelledby="profile-tab"
+              >
+                <% include ./addItem.ejs %>
+              </div>
+            </div>
           </div>
         </div>
         <% include ../../partials/footer.ejs %>
@@ -32,4 +83,7 @@
     <% include ../../partials/logoutModal.ejs %>
   </body>
   <% include ../../partials/scripts.ejs %>
+  <script>
+    CKEDITOR.replace('description');
+  </script>
 </html>

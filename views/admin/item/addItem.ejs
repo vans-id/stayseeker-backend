@@ -1,0 +1,83 @@
+<div class="card shadow my-4">
+  <div class="card-body">
+    <form
+      action="/admin/item"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <div class="form-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Title"
+          name="title"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <input
+          type="number"
+          class="form-control"
+          placeholder="Price"
+          name="price"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="City"
+          name="city"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Country"
+          name="country"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <select name="categoryId" class="form-control">
+          <option value="">
+            Select Category
+          </option>
+          <% for( let i = 0; i < categories.length; i++
+          ) { %>
+          <option value="<%= categories[i].id %>">
+            <%= categories[i].name %>
+          </option>
+          <% } %>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Select Images</label>
+        <input
+          type="file"
+          class="form-control-file"
+          name="image"
+          multiple
+          required
+        />
+      </div>
+      <div class="form-group">
+        <textarea
+          type="text"
+          class="form-control"
+          placeholder="Description"
+          name="description"
+          rows="6"
+          required
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Add Item
+      </button>
+    </form>
+  </div>
+</div>

@@ -9,12 +9,15 @@ const flash = require('connect-flash');
 
 const mongoose = require('mongoose');
 mongoose
-  .connect('mongodb://localhost:27017/db_stayseeker', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
+  .connect(
+    'mongodb+srv://djevann:wanipira1111@cluster0-hohuj.gcp.mongodb.net/db-stayseeker?retryWrites=true&w=majority',
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    }
+  )
   .then(() => {
     console.log('connected to database!');
   })

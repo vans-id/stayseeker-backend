@@ -82,14 +82,30 @@
 
     <% include ../../../partials/logoutModal.ejs %>
   </body>
-
-  <% include show_modal_feature.ejs %> <% include
+  <% include show_modal_activity.ejs %> <% include
+  show_modal_feature.ejs %> <% include
   ../../../partials/scripts.ejs %>
 
   <script>
     $(document).ready(function () {
       $('#dataTableActivity').DataTable();
     });
+
+    $('#dataTableActivity').on(
+      'click',
+      '.button-update',
+      function () {
+        let id = $(this).data('id');
+        let name = $(this).data('name');
+        let type = $(this).data('type');
+
+        $('#showModalFeature').modal('show');
+        $('.id').val(id);
+        $('.name').val(name);
+        $('.type').val(type);
+      }
+    );
+
     $('#dataTable').on(
       'click',
       '.button-update',
@@ -104,6 +120,7 @@
         $('.qty').val(qty);
       }
     );
+
     CKEDITOR.replace('description');
   </script>
 </html>

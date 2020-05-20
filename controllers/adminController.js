@@ -467,7 +467,7 @@ module.exports = {
       res.redirect(`/admin/item`);
     }
   },
-  // Feature & Activity
+  // Detail Item
   viewDetailItem: async (req, res) => {
     const { itemId } = req.params;
 
@@ -526,6 +526,44 @@ module.exports = {
       req.flash(
         'alertMessage',
         'New Feature has been added'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect(
+        `/admin/item/show-detail-item/${itemId}`
+      );
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(
+        `/admin/item/show-detail-item/${itemId}`
+      );
+    }
+  },
+  editFeature: async (req, res) => {
+    const { id, name, qty, itemId } = req.body;
+
+    try {
+      const updatedFeature = await Feature.findById(
+        id
+      );
+
+      if (req.file !== undefined) {
+        await fs.unlink(
+          path.join(
+            `public/${updatedFeature.imageUrl}`
+          )
+        );
+        updatedFeature.imageUrl = `images/${req.file.filename}`;
+      }
+
+      updatedFeature.name = name;
+      updatedFeature.qty = qty;
+
+      await updatedFeature.save();
+
+      req.flash(
+        'alertMessage',
+        'Selected Feature has been updated'
       );
       req.flash('alertStatus', 'success');
       res.redirect(

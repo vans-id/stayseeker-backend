@@ -58,6 +58,11 @@ router.post(
   uploadSingle,
   adminController.addFeature
 );
+router.put(
+  '/item/update/feature',
+  uploadSingle,
+  adminController.editFeature
+);
 
 router.get('/booking', adminController.viewBooking);
 

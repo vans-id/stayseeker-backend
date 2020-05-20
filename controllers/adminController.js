@@ -5,15 +5,16 @@ const Category = require('../models/Category');
 const Bank = require('../models/Bank');
 const Item = require('../models/Item');
 const Image = require('../models/Image');
+const Feature = require('../models/Feature');
 
 module.exports = {
-  viewDashboard: (req, res, next) => {
+  viewDashboard: (req, res) => {
     res.render('admin/dashboard/view_dashboard', {
       title: 'Stayseeker | Dashboard',
     });
   },
   // Categories
-  viewCategory: async (req, res, next) => {
+  viewCategory: async (req, res) => {
     try {
       const categories = await Category.find();
       const alertMessage = req.flash('alertMessage');
@@ -33,7 +34,7 @@ module.exports = {
       res.redirect('/admin/dashboard');
     }
   },
-  addCategory: async (req, res, next) => {
+  addCategory: async (req, res) => {
     try {
       const { name } = req.body;
 
@@ -51,7 +52,7 @@ module.exports = {
       res.redirect('/admin/category');
     }
   },
-  editCategory: async (req, res, next) => {
+  editCategory: async (req, res) => {
     try {
       const { id, name } = req.body;
       const selectedCategory = await Category.findById(
@@ -72,7 +73,7 @@ module.exports = {
       res.redirect('/admin/category');
     }
   },
-  deleteCategory: async (req, res, next) => {
+  deleteCategory: async (req, res) => {
     try {
       const { id } = req.params;
       const selectedCategory = await Category.findById(
@@ -93,7 +94,7 @@ module.exports = {
     }
   },
   // Banks
-  viewBank: async (req, res, next) => {
+  viewBank: async (req, res) => {
     try {
       const banks = await Bank.find();
 
@@ -115,7 +116,7 @@ module.exports = {
       res.redirect('/admin/dashboard');
     }
   },
-  addBank: async (req, res, next) => {
+  addBank: async (req, res) => {
     try {
       const { bankName, accNumber, name } = req.body;
 
@@ -138,7 +139,7 @@ module.exports = {
       res.redirect('/admin/bank');
     }
   },
-  editBank: async (req, res, next) => {
+  editBank: async (req, res) => {
     try {
       const {
         id,
@@ -180,7 +181,7 @@ module.exports = {
       res.redirect('/admin/bank');
     }
   },
-  deleteBank: async (req, res, next) => {
+  deleteBank: async (req, res) => {
     try {
       const { id } = req.params;
       const selectedBank = await Bank.findById(id);
@@ -203,7 +204,7 @@ module.exports = {
     }
   },
   // Items
-  viewItem: async (req, res, next) => {
+  viewItem: async (req, res) => {
     try {
       const categories = await Category.find();
       const items = await Item.find()
@@ -236,7 +237,7 @@ module.exports = {
       res.redirect('/admin/item');
     }
   },
-  addItem: async (req, res, next) => {
+  addItem: async (req, res) => {
     try {
       const {
         title,
@@ -292,7 +293,7 @@ module.exports = {
       res.redirect('/admin/item');
     }
   },
-  showImageItem: async (req, res, next) => {
+  showImageItem: async (req, res) => {
     try {
       const { id } = req.params;
       const selectedItem = await Item.findById(
@@ -321,7 +322,7 @@ module.exports = {
       res.redirect('/admin/item');
     }
   },
-  showEditItem: async (req, res, next) => {
+  showEditItem: async (req, res) => {
     try {
       const { id } = req.params;
       const selectedItem = await Item.findById(id)
@@ -356,7 +357,7 @@ module.exports = {
       res.redirect('/admin/item');
     }
   },
-  editItem: async (req, res, next) => {
+  editItem: async (req, res) => {
     const { id } = req.params;
     const {
       title,
@@ -419,7 +420,7 @@ module.exports = {
       res.redirect(`/admin/item/${id}`);
     }
   },
-  deleteItem: async (req, res, next) => {
+  deleteItem: async (req, res) => {
     try {
       const { id } = req.params;
       const deletedItem = await Item.findById(
@@ -466,8 +467,80 @@ module.exports = {
       res.redirect(`/admin/item`);
     }
   },
+  // Feature & Activity
+  viewDetailItem: async (req, res) => {
+    const { itemId } = req.params;
+
+    try {
+      const features = await Feature.find({ itemId });
+
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
+      res.render(
+        'admin/item/detail_item/view_detail_item',
+        {
+          title: 'Stayseeker | Detail Item',
+          alert,
+          itemId,
+          features,
+        }
+      );
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(
+        `/admin/item/show-detail-item/${itemId}`
+      );
+    }
+  },
+  addFeature: async (req, res) => {
+    const { name, qty, itemId } = req.body;
+
+    try {
+      if (req.file === undefined) {
+        req.flash('alertMessage', `Missing Image`);
+        req.flash('alertStatus', 'danger');
+        res.redirect(
+          `/admin/item/show-detail-item/${itemId}`
+        );
+      }
+
+      const newFeature = await Feature.create({
+        name,
+        qty,
+        itemId,
+        imageUrl: `images/${req.file.filename}`,
+      });
+
+      const selectedItem = await Item.findById(itemId);
+      selectedItem.featureId.push({
+        _id: newFeature._id,
+      });
+      await selectedItem.save();
+
+      req.flash(
+        'alertMessage',
+        'New Feature has been added'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect(
+        `/admin/item/show-detail-item/${itemId}`
+      );
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(
+        `/admin/item/show-detail-item/${itemId}`
+      );
+    }
+  },
   // Booking
-  viewBooking: (req, res, next) => {
+  viewBooking: (req, res) => {
     res.render('admin/booking/view_booking', {
       title: 'Stayseeker | Booking Status',
     });

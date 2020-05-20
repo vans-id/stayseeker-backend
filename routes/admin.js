@@ -49,6 +49,16 @@ router.put(
 );
 router.delete('/item/:id', adminController.deleteItem);
 
+router.get(
+  '/item/show-detail-item/:itemId',
+  adminController.viewDetailItem
+);
+router.post(
+  '/item/add/feature',
+  uploadSingle,
+  adminController.addFeature
+);
+
 router.get('/booking', adminController.viewBooking);
 
 module.exports = router;

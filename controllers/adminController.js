@@ -1,5 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const Category = require('../models/Category');
 const Bank = require('../models/Bank');
@@ -7,11 +8,83 @@ const Item = require('../models/Item');
 const Image = require('../models/Image');
 const Feature = require('../models/Feature');
 const Activity = require('../models/Activity');
+const Users = require('../models/Users');
+const Booking = require('../models/Booking');
+const Member = require('../models/Member');
 
 module.exports = {
+  // Auth
+  viewSignin: async (req, res) => {
+    try {
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
+      if (!req.session.user) {
+        res.render('index', {
+          alert,
+          title: 'Stayseeker | Login',
+        });
+      } else {
+        res.redirect('/admin/dashboard');
+      }
+    } catch (error) {
+      res.redirect('/admin/signin');
+    }
+  },
+  actionSignIn: async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const selectedUser = await Users.findOne({
+        username,
+      });
+
+      // Check user exist
+      if (!selectedUser) {
+        req.flash(
+          'alertMessage',
+          'User does not exist'
+        );
+        req.flash('alertStatus', 'danger');
+        res.redirect('/admin/signin');
+      }
+
+      // Check password match
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        selectedUser.password
+      );
+
+      if (!isPasswordMatch) {
+        req.flash('alertMessage', 'Wrong password');
+        req.flash('alertStatus', 'danger');
+        res.redirect('/admin/signin');
+      }
+
+      req.session.user = {
+        id: selectedUser.id,
+        username: selectedUser.username,
+      };
+      res.redirect('/admin/dashboard');
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect('/admin/signin');
+    }
+  },
+  actionLogout: (req, res) => {
+    req.session.destroy();
+    res.redirect('/admin/signin');
+  },
+
+  // Dashboard
   viewDashboard: (req, res) => {
     res.render('admin/dashboard/view_dashboard', {
       title: 'Stayseeker | Dashboard',
+      user: req.session.user,
     });
   },
 
@@ -29,6 +102,7 @@ module.exports = {
         categories,
         alert,
         title: 'Stayseeker | Category',
+        user: req.session.user,
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -61,13 +135,13 @@ module.exports = {
         id
       );
       selectedCategory.name = name;
+      await selectedCategory.save();
+
       req.flash(
         'alertMessage',
         'Selected category has been edited'
       );
       req.flash('alertStatus', 'success');
-
-      await selectedCategory.save();
       res.redirect('/admin/category');
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -112,6 +186,7 @@ module.exports = {
         title: 'Stayseeker | Bank',
         alert,
         banks,
+        user: req.session.user,
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -234,6 +309,7 @@ module.exports = {
         categories,
         items,
         action: 'view',
+        user: req.session.user,
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -319,6 +395,7 @@ module.exports = {
         alert,
         selectedItem,
         action: 'show image',
+        user: req.session.user,
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -354,6 +431,7 @@ module.exports = {
         selectedItem,
         selectedCategory,
         action: 'edit',
+        user: req.session.user,
       });
     } catch (error) {
       req.flash('alertMessage', `${error.message}`);
@@ -497,6 +575,7 @@ module.exports = {
           itemId,
           features,
           activities,
+          user: req.session.user,
         }
       );
     } catch (error) {
@@ -766,10 +845,19 @@ module.exports = {
       );
     }
   },
+
   // Booking
-  viewBooking: (req, res) => {
-    res.render('admin/booking/view_booking', {
-      title: 'Stayseeker | Booking Status',
-    });
+  viewBooking: async (req, res) => {
+    try {
+      const booking = await Booking.find()
+        .populate('memberId')
+        .populate('bankId');
+
+      res.render('admin/booking/view_booking', {
+        title: 'Stayseeker | Booking Status',
+        user: req.session.user,
+        booking,
+      });
+    } catch (error) {}
   },
 };

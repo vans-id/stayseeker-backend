@@ -81,11 +81,24 @@ module.exports = {
   },
 
   // Dashboard
-  viewDashboard: (req, res) => {
-    res.render('admin/dashboard/view_dashboard', {
-      title: 'Stayseeker | Dashboard',
-      user: req.session.user,
-    });
+  viewDashboard: async (req, res) => {
+    try {
+      const members = await Member.find();
+      const bookings = await Booking.find();
+      const items = await Item.find();
+      const categories = await Category.find();
+
+      res.render('admin/dashboard/view_dashboard', {
+        title: 'Stayseeker | Dashboard',
+        user: req.session.user,
+        members,
+        bookings,
+        items,
+        categories,
+      });
+    } catch (error) {
+      res.redirect('/admin/dashboard');
+    }
   },
 
   // Categories
@@ -853,11 +866,81 @@ module.exports = {
         .populate('memberId')
         .populate('bankId');
 
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = {
+        message: alertMessage,
+        status: alertStatus,
+      };
+
       res.render('admin/booking/view_booking', {
         title: 'Stayseeker | Booking Status',
         user: req.session.user,
         booking,
+        alert,
       });
-    } catch (error) {}
+    } catch (error) {
+      res.redirect(`/admin/booking`);
+    }
+  },
+  showDetailBooking: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const selectedBooking = await Booking.findById(
+        id
+      )
+        .populate('memberId')
+        .populate('bankId');
+
+      res.render('admin/booking/show_detail_booking', {
+        title: 'Stayseeker | Detail Booking',
+        user: req.session.user,
+        selectedBooking,
+      });
+    } catch (error) {
+      res.redirect(`/admin/booking`);
+    }
+  },
+  actionConfirmation: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const acceptedBooking = await Booking.findById(
+        id
+      );
+      acceptedBooking.payments.status = 'Accepted';
+      await acceptedBooking.save();
+
+      req.flash(
+        'alertMessage',
+        'Selected Book has been confirmed'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect(`/admin/booking`);
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(`/admin/booking`);
+    }
+  },
+  actionReject: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const acceptedBooking = await Booking.findById(
+        id
+      );
+      acceptedBooking.payments.status = 'Rejected';
+      await acceptedBooking.save();
+
+      req.flash(
+        'alertMessage',
+        'Selected Book has been rejected'
+      );
+      req.flash('alertStatus', 'success');
+      res.redirect(`/admin/booking`);
+    } catch (error) {
+      req.flash('alertMessage', `${error.message}`);
+      req.flash('alertStatus', 'danger');
+      res.redirect(`/admin/booking`);
+    }
   },
 };

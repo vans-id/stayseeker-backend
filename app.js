@@ -6,6 +6,7 @@ const logger = require('morgan');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const flash = require('connect-flash');
+const compression = require('compression');
 
 const mongoose = require('mongoose');
 mongoose
@@ -50,6 +51,7 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+app.use(compression());
 app.use(methodOverride('_method'));
 app.use(
   session({

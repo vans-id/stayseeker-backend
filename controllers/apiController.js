@@ -213,7 +213,7 @@ module.exports = {
 
       res.status(201).json({
         message: 'Successfully book',
-        createdBooking,
+        booking: createdBooking,
       });
     } catch (error) {
       res.status(500).json({ message: error.message });

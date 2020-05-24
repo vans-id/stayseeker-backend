@@ -1,5 +1,5 @@
-const seeder = require('mongoose-seed');
-const mongoose = require('mongoose');
+var seeder = require('mongoose-seed');
+var mongoose = require('mongoose');
 
 // Connect to MongoDB via Mongoose
 seeder.connect(
@@ -2052,7 +2052,7 @@ var data = [
         bankName: 'Mandiri',
         accNumber: '089898',
         name: 'elfin',
-        imageUrl: 'images/logo bca.svg',
+        imageUrl: 'images/logo bca.png',
       },
       {
         _id: mongoose.Types.ObjectId(
@@ -2061,7 +2061,7 @@ var data = [
         bankName: 'BCA',
         accNumber: '878678',
         name: 'elfin',
-        imageUrl: 'images/logo mandiri.svg',
+        imageUrl: 'images/logo mandiri.png',
       },
     ],
   },
@@ -2081,6 +2081,7 @@ var data = [
         ),
         username: 'superadmin',
         password: 'rahasia',
+        role: 'admin',
       },
     ],
   },

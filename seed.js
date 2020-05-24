@@ -2052,7 +2052,7 @@ var data = [
         bankName: 'Mandiri',
         accNumber: '089898',
         name: 'elfin',
-        imageUrl: 'images/logo bca.png',
+        imageUrl: 'images/logo bca.svg',
       },
       {
         _id: mongoose.Types.ObjectId(
@@ -2061,7 +2061,7 @@ var data = [
         bankName: 'BCA',
         accNumber: '878678',
         name: 'elfin',
-        imageUrl: 'images/logo mandiri.png',
+        imageUrl: 'images/logo mandiri.svg',
       },
     ],
   },
